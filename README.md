@@ -6,10 +6,12 @@ ChatShare
 
 1. Twitter (like) App
 ===
-README For TwitterApp
-Project for CSC 536: Distributed Systems 2
-Professor Ljubomir Perkovic
-By Student Kevin Westropp
+
+| README For TwitterApp |
+---
+| Project for CSC 536: Distributed Systems 2 |
+| Professor Ljubomir Perkovic |
+| By Student Kevin Westropp |
 
 There are three main directories:
 
@@ -19,7 +21,6 @@ There are three main directories:
 
 3. client - Twitter Client for connecting and interacting with server
 
----
 To Compile
 ---
 
@@ -27,7 +28,6 @@ To Compile
 
 			$ sbt compile
 
----
 To Run
 ---
 
@@ -35,7 +35,6 @@ To Run
 
 			$ sbt run
 
----
 Interaction
 ---
 
@@ -48,7 +47,6 @@ Interaction
 	4. Interface works in loop, -> select option -> provide parameters for option -> receive possible messages -> back to commands and options
 
 
----
 Stopping
 ---
 
@@ -66,10 +64,12 @@ Stopping
 
 2. ChatShare
 ==========
-README For ChatShare
-Project for CSC 536: Distributed Systems 2
-Professor Ljubomir Perkovic
-By Student Kevin Westropp
+
+| README For ChatShare |
+---
+| Project for CSC 536: Distributed Systems 2 |
+| Professor Ljubomir Perkovic |
+| By Student Kevin Westropp |
 
 There are two main directories:
 
@@ -77,7 +77,6 @@ There are two main directories:
 
 2. chatshare - Web Server to maintain state of program and handle http requests
 
----
 To Compile
 ---
 
@@ -86,7 +85,6 @@ To Compile
 			$ sbt compile
 
 
----
 To Run
 ---
 
@@ -94,7 +92,6 @@ To Run
 
 			$ sbt run
 
----
 Interaction
 ---
 
@@ -105,7 +102,6 @@ Interaction
 	3. Can post tweets, find other users of system by username and start following their posts
 
 
----
 Stopping
 ---
 
