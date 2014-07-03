@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<title>Chat Share Web App</title>
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css">
+  <link rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap-theme.min.css">
+  <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+  <script type="text/javascript">
+    //global vars
+    var socket;
+    var newData;
+    var username;
+    var searchMessages;
+    var userString;
+    var followerString;
+
+    var startIndex;
+    var endIndex;
+
+    var messageText;
+    var message;
+
+    var user;
+    var userLink;
+    var userText;
+
+    if(!window.WebSocket){
+      window.WebSocket = window.MozWebSocket;
+      }
+    if(window.WebSocket){
+      socket = new WebSocket("ws://localhost:8888/websocket/");
+      socket.onmessage = function(event){ 
+        if(event.data.indexOf("@") > -1){
+          parseUsers(event.data);
+        }else if(event.data.indexOf("$") > -1){
+          parseFollowers(event.data);
+        }else if(event.data.indexOf("?") > -1){
+          parseMessages(event.data);
+        }else{
+          newData = document.createTextNode(event.data);
+          document.getElementById('responseText').appendChild(newData);
+          var lineBreak = document.createElement("br");
+          document.getElementById('responseText').appendChild(lineBreak); 
+        }
+      };
+      socket.onopen = function(event){ 
+        newData = document.createTextNode("Web Socket Opened!");      
+        document.getElementById('responseText').appendChild(newData);
+        var lineBreak = document.createElement("br");
+        document.getElementById('responseText').appendChild(lineBreak); 
+      };
+      socket.onclose = function(event){ 
+        newData = document.createTextNode("Web Socket Closed.");
+        document.getElementById('responseText').appendChild(newData);
+        var lineBreak = document.createElement("br");
+        document.getElementById('responseText').appendChild(lineBreak); 
+      };
+    } else {
+      alert("Your browser does not support Web Sockets.");
+    }
+
+    function send(message){
+      if(!window.WebSocket){ return; }
+      if(socket.readyState == WebSocket.OPEN){
+        socket.send(message);
+      } else {
+        alert("The socket is not open.");
+      }
+    }
+
+    function closeWebSocket(){
+      if(socket.readyState==WebSocket.OPEN){
+        socket.close();
+        alert("Socket Closed, please reload page and login to use ChatShare.");
+      }
+    }
+
+    function login(){
+      username = prompt("Please Login to begin using Chat Share.", "username");
+      if(username != null){
+        setTimeout(function(){ send(">@" + username) }, 1000);
+        alert("Welcome to ChatShare " + username + "!");
+      }else{
+        setTimeout(function(){ closeWebSocket() }, 1000);
+      }
+    }
+
+    function logout(){
+      setTimeout(function(){ send(">!@" + username) }, 1000);
+      setTimeout(function(){ closeWebSocket() }, 2000);
+      alert("Thanks for using ChatShare.");
+    }
+
+    function updateUsers(){
+      clearContainer(1);
+      send('$!');
+    }
+
+    function updateFollowers(){
+      clearContainer(2);
+      send('$@' + username);
+    }
+
+    function updateSendQuery(query){
+      clearContainer(3);
+      send(query);
+    }
+
+    function clearContainer(method){
+      if(method == 1){
+        var users = document.getElementById('ActiveUsers');
+        while(users.firstChild){
+          users.removeChild(users.firstChild);
+        }
+      }else if(method == 2){
+        var followers = document.getElementById('Following');
+        while(followers.firstChild){
+          followers.removeChild(followers.firstChild);
+        }
+      }else if(method == 3){
+        var results = document.getElementById('searchResults');
+        while(results.firstChild){
+          results.removeChild(results.firstChild);
+        }
+      }else{
+        alert("Error: Not a proper clear method.");
+      }
+    }
+
+    function parseMessages(data){
+      searchMessages = data.toString();
+      while(searchMessages.indexOf("?") > -1){
+        startIndex = searchMessages.indexOf("?");
+        searchMessages = searchMessages.substring(startIndex, searchMessages.length);
+        endIndex = searchMessages.indexOf("<");
+        messageText = searchMessages.substring(1, endIndex);
+        message = document.createTextNode(messageText);
+        document.getElementById('searchResults').appendChild(message);
+        var lineBreak = document.createElement("br");
+        document.getElementById('searchResults').appendChild(lineBreak); 
+        searchMessages = searchMessages.substring(endIndex, searchMessages.length);
+      }
+    }
+
+    function parseUsers(data){
+      userString = data.toString();
+      while(userString.indexOf("@") > -1){
+        startIndex = userString.indexOf("@");
+        userString = userString.substring(startIndex, userString.length);
+        endIndex = userString.indexOf("<");
+        user = userString.substring(1, endIndex);
+        userLink = document.createElement("a");
+        userLink.setAttribute('href', "javascript:addFollower('" + user + "')");
+        userText = document.createTextNode(user);
+        userLink.appendChild(userText);
+        document.getElementById('ActiveUsers').appendChild(userLink);
+        var lineBreak = document.createElement("br");
+        document.getElementById('ActiveUsers').appendChild(lineBreak); 
+        userString = userString.substring(endIndex, userString.length);
+      }
+    }
+    
+    function parseFollowers(data){
+      followerString = data.toString();
+      while(followerString.indexOf("$") > -1){
+        startIndex = followerString.indexOf("$");
+        followerString = followerString.substring(startIndex, followerString.length);
+        endIndex = followerString.indexOf("<");
+        user = followerString.substring(1, endIndex);
+        userLink = document.createElement("a");
+        userLink.setAttribute('href', "javascript:removeFollower('" + user + "')");
+        userText = document.createTextNode(user);
+        userLink.appendChild(userText);
+        document.getElementById('Following').appendChild(userLink);
+        var lineBreak = document.createElement("br");
+        document.getElementById('Following').appendChild(lineBreak); 
+        followerString = followerString.substring(endIndex, followerString.length);
+      }
+    }
+
+    function addFollower(user){
+      clearContainer(2);
+      send("%@" + user);
+    }
+
+    function removeFollower(user){
+      clearContainer(2);
+      send("%!@" + user);
+    }
+
+</script>
+</head>
+<body onload="login()">
+  <div class="container-fluid">
+  	<div class="row">
+      <div class="col-md-12">
+        <h1 class="text-center">Chat Share Web App</h1>
+        <input class="btn btn-danger center-block" type="button" value="Logout" onclick="logout()"/>
+      </div>
+    </div>
+    <div class="row">
+  	 <div class="col-md-3">
+      <form onsubmit="return false;">
+        <h3>Post Messages</h3>
+  		  <input type="text" name="message" maxlength="140" size="60" value="Hello, World!"/>
+  		  <input class="btn" type="button" value="Post" onclick="send('> ' + this.form.message.value + ' ')" />
+  		  <h3>Timeline Output</h3>
+  		  <div id="responseText" style="width: 400px; min-height: 300px; border: 2px solid;"></div>
+  	 </form>
+    </div>
+    <div class="col-md-3">
+      <form onsubmit="return false;">
+        <h3>Users</h3>
+        <input class="btn" type="button" value="Update" onclick="updateUsers()"/>
+        <div id="ActiveUsers" style="width: 200px; min-height: 300px; border: 2px solid;"></div>
+      </form>
+    </div>
+    <div class="col-md-3">
+      <form onsubmit="return false;">
+        <h3>Following</h3>
+        <input class="btn" type="button" value="Update" onclick="updateFollowers()"/>
+        <div id="Following" style="width: 200px; min-height: 300px; border: 2px solid;"></div>
+      </form>
+    </div>
+    <div class="col-md-3">
+      <form onsubmit="return false;">
+        <h3>Search Tweets by Username or Tag</h3>
+        <input type="text" name="message" maxlength="140" size="60" value="#tag or @username"/>
+        <input class="btn" type="button" value="Search" onclick="updateSendQuery('?' + this.form.message.value)" />
+        <h3>Results</h3>
+        <div id="searchResults" style="width: 400px; min-height: 300px; border: 2px solid;"></div>
+      </form>
+    </div>
+  </div>
+  </div>
+</body>
+</html>
